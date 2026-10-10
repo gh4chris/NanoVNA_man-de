@@ -1,3 +1,5 @@
+## [Hier mit click zum nanoVNA Handbuch in deutscher Sprache](https://github.com/gh4chris/NanoVNA_man-de/blob/master/index.md/)
+
 ## Technische Hinweise zu diesem Repository
 
 Dieses Repository ist für die Veröffentlichung über GitHub Pages vorgesehen. Die Inhalte werden mit Jekyll in statische HTML-Seiten umgewandelt.
