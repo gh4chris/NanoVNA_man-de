@@ -1,578 +1,572 @@
----
-layout: default
----
-
 1. toc
 {:toc}
 
-# はじめに
+# Einleitung
 
-このドキュメントは NanoVNA に関する非公式なユーザーガイドです。URL は https://cho45.github.io/NanoVNA-manual/ です。
+Dieses Dokument ist ein inoffizieller Benutzerleitfaden für das NanoVNA. Die URL lautet: https://github.com/gh4chris/NanoVNA_man-de/
 
-[github レポジトリ](https://github.com/cho45/NanoVNA-manual) で管理しています。
+Es wird im [GitHub-Repository](https://github.com/gh4chris/NanoVNA_man-de) verwaltet.
 
-最新ファームウェアと齟齬がある場合など、修正内容がある場合は Pull-request を送ってください。
+Falls Korrekturen erforderlich sind, z. B. wegen Abweichungen von der neuesten Firmware, senden Sie bitte einen Pull-Request.
 
-また、GitHub の Releases ページで PDF 形式でも提供しています。
+Das Dokument steht außerdem im PDF-Format auf der GitHub-Releases-Seite zur Verfügung.
 
- * https://github.com/cho45/NanoVNA-manual/releases
+  * https://github.com/gh4chris/NanoVNA_man-de/releases
 
-## NanoVNA とは
+## Was ist das NanoVNA?
 
-NanoVNA のハードウェアにはいくつか種類があり、このドキュメントが対象とするのは以下のハードウェアです。
+Es gibt mehrere Varianten der NanoVNA-Hardware. Dieses Dokument bezieht sich auf die folgenden Varianten:
 
-- ttrftech 版 (オリジナル) [ttrftech/NanoVNA](https://github.com/ttrftech/NanoVNA)
-- hugen79 版 [hugen79/NanoVNA-H](https://github.com/hugen79/NanoVNA-H)
+- ttrftech-Version (Original) [ttrftech/NanoVNA](https://github.com/ttrftech/NanoVNA)
+- hugen79-Version [hugen79/NanoVNA-H](https://github.com/hugen79/NanoVNA-H)
 
-これらのハードウェアは回路上のコンポーネントがほぼ同じであり、共通のファームウェアが利用できます。
+Diese Hardware-Varianten haben nahezu identische Schaltungskomponenten und können dieselbe Firmware verwenden.
 
-## 動作に必要なもの
+## Für den Betrieb erforderliche Ausrüstung
 
-最低限以下のものが必要です。
+Mindestens wird Folgendes benötigt:
 
- * NanoVNA 本体
- * SMA LOAD 50Ω
+ * NanoVNA-Gerät
+ * SMA LOAD 50 Ω
  * SMA SHORT
  * SMA OPEN
- * SMA Female to Female スルーコネクタ
- * SMA Male to Male ケーブル × 2
+ * SMA-Female-to-Female-Durchgangskonnektor (Thru)
+ * SMA-Male-to-Male-Kabel × 2
 
+## Grundlagen des NanoVNA
 
-## NanoVNA の基礎
+Ein VNA (Vector Network Analyzer) misst die Frequenzabhängigkeit der reflektierten und der durchgelassenen Leistung eines Hochfrequenznetzwerks (RF Network).
 
-VNA (Vector Network Analyzer) は高周波網 (RF Network) の反射電力および通過電力の周波数特性を計測するものです。
+Das NanoVNA misst die folgenden Größen:
 
-NanoVNA は以下の要素を測定します。
+ * I/Q-Signal der Eingangsspannung
+ * I/Q-Signal der reflektierten Spannung
+ * I/Q-Signal der durchgelassenen Spannung
 
- * 入力電圧の I/Q 信号
- * 反射電圧の I/Q 信号
- * 通過電圧の I/Q 信号
+Daraus werden folgende Größen berechnet:
 
-ここから以下を算出します。
+ * Reflexionsfaktor (reflection coefficient) S11
+ * Übertragungsfaktor (transmission coefficient) S21
 
- * 反射係数 (reflection coefficients) S11
- * 伝送係数 (transmission coefficient) S21
+Die folgenden daraus berechenbaren Größen können angezeigt werden:
 
-これらから算出可能な以下の項目を表示できます。
-
- * 反射損失
- * 通過損失
- * 複素インピーダンス
-   * レジスタンス
-   * リアクタンス
+ * Rückflussdämpfung (Reflexionsverlust)
+ * Einfügedämpfung (Durchgangsverlust)
+ * Komplexe Impedanz
+   * Wirkwiderstand (Resistanz)
+   * Blindwiderstand (Reaktanz)
  * SWR
 
-など。
+usw.
 
-## NanoVNA の発振周波数
+## Oszillationsfrequenzen des NanoVNA
 
-NanoVNA では測定対象の周波数帯域の 101 点を対象に、反射係数・伝送係数を測定します。
+Das NanoVNA misst den Reflexions- und Übertragungsfaktor an 101 Punkten des zu messenden Frequenzbands.
 
-NanoVNA の局発周波数は 50kHz から 300MHz です。これ以上の周波数は高調波モードを使用します。高調波モードでも基本波は減衰されません。
-周波数ごとの利用モードは以下の通りです。
+Die lokale Oszillatorfrequenz des NanoVNA liegt zwischen 50 kHz und 300 MHz. Höhere Frequenzen werden im Harmonischen-Modus (Oberwellen-Modus) gemessen. Auch in diesem Modus wird die Grundwelle nicht gedämpft.
+Die je nach Frequenz verwendeten Modi sind:
 
-* 300MHz まで: 基本波
-* 300MHz から 900MHz まで: 第 3 次高調波
-* 900MHz から 1500MHz まで: 第 5 次高調波
+* bis 300 MHz: Grundwelle
+* 300 MHz bis 900 MHz: 3. Harmonische
+* 900 MHz bis 1500 MHz: 5. Harmonische
 
-特にアンプの利得などを確認する場合、常に基本波の入力もあることに注意が必要です。
+Insbesondere bei der Überprüfung der Verstärkung eines Verstärkers ist zu beachten, dass stets auch die Grundwelle am Eingang anliegt.
 
-入力は、いずれの場合も 5kHz の中間周波数に変換されます。信号は 48kHz サンプリングでアナログ・デジタル変換されます。デジタルデータは MCU にて信号処理されます。
+Der Eingang wird in allen Fällen auf eine Zwischenfrequenz von 5 kHz umgesetzt. Das Signal wird mit 48 kHz Abtastrate analog-digital gewandelt. Die digitalen Daten werden im Mikrocontroller (MCU) signalverarbeitet.
 
-# 最初にすること
+# Erste Schritte
 
-使用するためには最初に必ず較正を行う必要があります。最初は以下の通りに較正を行います。
+Bevor Sie das Gerät verwenden, müssen Sie unbedingt zunächst eine Kalibrierung durchführen. Kalibrieren Sie zum ersten Mal wie folgt:
 
- * START が 50kHz であることを確認する
- * STOP が 900MHz であることを確認する
- * <a href="#%E8%BC%83%E6%AD%A3%E6%96%B9%E6%B3%95">較正方法</a>に従って較正を行う
+ * Prüfen, dass START 50 kHz beträgt
+ * Prüfen, dass STOP 900 MHz beträgt
+ * Kalibrierung gemäß <a href="#kalibrierungsverfahren">Kalibrierungsverfahren</a> durchführen
 
-# 入力方法
+# Eingabemöglichkeiten
 
-NanoVNA には以下の入力があります。
+Das NanoVNA verfügt über folgende Eingaben:
 
- * タッチパネルのタップ・ロングタップ
- * レバースイッチ
-   * L / L 長押し
-   * R / R 長押し
-   * 押し込み / 押し込み長押し
- * 電源スライドスイッチ
+ * Tippen bzw. langes Tippen auf das Touchpanel
+ * Hebelschalter (Joystick)
+   * L / langes L
+   * R / langes R
+   * Drücken / langes Drücken
+ * Ein/Aus-Schiebeschalter
 
-# 画面の見方
+# Die Bildschirmanzeige
 
-## メイン画面
+## Hauptbildschirm
 
 <img class="" src="./images/nanovna-display-infor_0000_start-stop.png"/>
 
-### 1. START 2. STOP 周波数
-スタート・ストップを指定したときのそれぞれの周波数が表示されます。
+### 1. START / 2. STOP-Frequenz
+Zeigt die jeweilige Frequenz an, die als Start bzw. Stopp festgelegt wurde.
 
-### 3. マーカー
-トレースそれぞれのマーカーの位置が表示されます。選択されたマーカーは以下の方法で移動できます。
+### 3. Marker
+Zeigt die Position der Marker jedes Traces an. Der ausgewählte Marker kann auf folgende Weise bewegt werden:
 
- * タッチパネルでマーカーをドラッグ
- * レバースイッチの L R 長押し
+ * Marker auf dem Touchpanel ziehen (Drag)
+ * L bzw. R des Hebelschalters gedrückt halten
 
-### 4. 較正状態
+### 4. Kalibrierstatus
 
-読みこんでいる較正のデータ番号及び、適用されている誤差補正について表示されます。
+Zeigt die Nummer der geladenen Kalibrierdaten sowie die angewendeten Fehlerkorrekturen an.
 
- * `C0` `C1` `C2` `C3` `C4`: それぞれ、対応する番号の較正データがロードされていることを示します。
- * `c0` `c1` `c2` `c3` `c4`: それぞれ、対応する番号の較正データがロードされていることを示していますが、ロード後に周波数範囲が変更されており誤差補正に補完を使っていることを示します。
- * `D`: directivity 誤差補正が適用されていることを示します
- * `R`: refrection tracking 誤差補正が適用されていることを示します
- * `S`: source match 誤差補正が適用されていることを示します
- * `T`: transmission tracking 誤差補正が適用されていることを示します
- * `X`: isolation (crosstalk) 誤差補正が適用されていることを示します
+ * `C0` `C1` `C2` `C3` `C4`: Zeigt an, dass die Kalibrierdaten der entsprechenden Nummer geladen sind.
+ * `c0` `c1` `c2` `c3` `c4`: Zeigt an, dass die Kalibrierdaten der entsprechenden Nummer geladen sind, aber nach dem Laden der Frequenzbereich geändert wurde und für die Fehlerkorrektur Interpolation verwendet wird.
+ * `D`: Zeigt an, dass die Fehlerkorrektur „directivity" (Richtwirkung) angewendet wird
+ * `R`: Zeigt an, dass die Fehlerkorrektur „reflection tracking" angewendet wird
+ * `S`: Zeigt an, dass die Fehlerkorrektur „source match" angewendet wird
+ * `T`: Zeigt an, dass die Fehlerkorrektur „transmission tracking" angewendet wird
+ * `X`: Zeigt an, dass die Fehlerkorrektur „isolation" (Übersprechen) angewendet wird
 
-### 5. リファレンスポジション
+### 5. Referenzposition
 
-対応するトレースのリファレンスポジションを示します。`DISPLAY` `SCALE` `REFERENCE POSITION` で位置を変更できます。
+Zeigt die Referenzposition des jeweiligen Traces an. Die Position kann unter `DISPLAY` `SCALE` `REFERENCE POSITION` geändert werden.
 
-### 6. マーカー状態
+### 6. Markerstatus
 
-選択中のアクティブなマーカーと、以前にアクティブだったマーカーが 1 つ表示されます。
+Es werden der aktuell aktive Marker sowie der zuvor aktive Marker (je einer) angezeigt.
 
-### 7. トレース状態
+### 7. Trace-Status
 
-各トレースフォーマットの状態と、アクティブなマーカーに対応する値が表示されます。
+Zeigt für jeden Trace den Zustand des jeweiligen Formats sowie die zum aktiven Marker gehörenden Werte an.
 
-例えば `CH0 LOGMAG 10dB/ 0.02dB` という表示の場合は以下のように読みます。
+Die Anzeige `CH0 LOGMAG 10dB/ 0.02dB` liest sich z. B. wie folgt:
 
- * チャンネル CH0 (リフレクション)
- * フォーマット `LOGMAG`
- * スケールは 10dB
- * 現在の値が 0.02dB
+ * Kanal CH0 (Reflexion)
+ * Format `LOGMAG`
+ * Skalierung 10 dB
+ * aktueller Wert 0.02 dB
 
-またアクティブなトレースはチャンネルの表示が反転します。
+Beim aktiven Trace wird die Kanalanzeige invertiert.
 
-### 8. バッテリー状態
+### 8. Batteriestatus
 
-バッテリーが装着され、PCB 上の `D2` が実装済みの場合バッテリー電圧に応じてアイコンが表示されます。
+Wenn ein Akku eingesetzt ist und auf der Platine `D2` bestückt ist, wird je nach Akkuspannung ein Symbol angezeigt.
 
 ---
 
-## メイン画面2
+## Hauptbildschirm 2
 
 <img class="" src="./images/nanovna-display-infor_0001_center-span.png"/>
 
-### 9. CENTER 周波数 10. スパン
+### 9. CENTER-Frequenz / 10. Spannweite (Span)
 
-センター周波数とスパンを指定したときのそれぞれの周波数が表示されます。
+Zeigt die jeweilige Frequenz an, wenn Mittenfrequenz und Spannweite festgelegt wurden.
 
 ---
 
-### メニュー画面
+### Menübildschirm
 
 <img class="" src="./images/nanovna-display-infor_0002_menu.png"/>
 
-### 11. メニュー
+### 11. Menü
 
-以下の操作でメニューを表示できます。
+Das Menü kann wie folgt aufgerufen werden:
 
- * タッチパネルのマーカー以外の場所をタップした場合
- * レバースイッチ押し込み
+ * Tippen auf eine Stelle des Touchpanels, die kein Marker ist
+ * Drücken des Hebelschalters
 
 ---
 
-## キーパッド画面
+## Tastenfeld-Bildschirm
 
 <img class="" src="./images/nanovna-display-infor_0003_keypad.png"/>
 
-### 12. 数字キー
+### 12. Zifferntasten
 
-数字をタップすると 1 文字入力されます。
+Durch Antippen einer Ziffer wird ein Zeichen eingegeben.
 
-### 13. バックキー
+### 13. Löschtaste (Back)
 
-1 文字削除します。1 文字も入力していないときは入力をキャンセルし、直前の状態に戻ります。
+Löscht ein Zeichen. Wurde noch kein Zeichen eingegeben, wird die Eingabe abgebrochen und zum vorherigen Zustand zurückgekehrt.
 
-### 14. 単位キー
+### 14. Einheitentasten
 
-現在の入力に該当する単位を乗算して、ただちに入力を終了します。×1 の場合は入力した数値がそのまま設定されます。
+Multipliziert die aktuelle Eingabe mit der zugehörigen Einheit und beendet die Eingabe sofort. Bei ×1 wird der eingegebene Zahlenwert unverändert übernommen.
 
-### 15. 入力欄
+### 15. Eingabefeld
 
-入力対象の項目名と、入力した数字が表示されます。
+Zeigt den Namen des einzustellenden Parameters sowie die eingegebenen Ziffern an.
 
-# 測定を開始する
+# Messung starten
 
-## 基本的な測定シーケンス
+## Grundlegender Messablauf
 
- 1. 測定する周波数範囲を設定する
- 2. 較正を行う
- 3. DUT を接続する
+ 1. Frequenzbereich festlegen
+ 2. Kalibrieren
+ 3. DUT (Prüfling) anschließen
 
-# 較正方法
+# Kalibrierungsverfahren
 
 <img class="capture" src="./images/cal.png">
 
-較正は基本的に、測定する周波数範囲を変更する度に実行する必要があります。正しくエラー修正がされている場合、画面上の較正状態表示は `Cn D R S T X` となります。n はロードしているデータ番号です。
+Die Kalibrierung muss grundsätzlich bei jeder Änderung des zu messenden Frequenzbereichs erneut durchgeführt werden. Liegt die Fehlerkorrektur korrekt vor, zeigt der Bildschirm als Kalibrierstatus `Cn D R S T X` an. Dabei ist n die Nummer der geladenen Daten.
 
-ただし NanoVNA は既存の較正情報を補完してある程度正しい表示を行うことができます。較正データをロードした後に周波数範囲を変更した場合、この状態になります。このとき、画面上の較正状態の表示は `cn D R S T X` となります。n はロードしているデータ番号です。
+Das NanoVNA kann jedoch vorhandene Kalibrierinformationen interpolieren und dadurch bis zu einem gewissen Grad korrekte Anzeigen liefern. Wird nach dem Laden von Kalibrierdaten der Frequenzbereich geändert, tritt dieser Zustand ein. In diesem Fall zeigt der Kalibrierstatus auf dem Bildschirm `cn D R S T X`. Dabei ist n die Nummer der geladenen Daten.
 
- 1. 現在の較正状態をリセットします `CAL` `RESET` 
- 2. CH0 ポートに OPEN スタンダードを接続し、`CAL` `CALIBRATE` `OPEN` を実行します。
- 3. CH0 ポートに SHORT スタンダードを接続し、`CAL` `CALIBRATE` `SHORT` を実行します。
- 4. CH0 ポートに LOAD スタンダードを接続し、`CAL` `CALIBRATE` `LOAD` を実行します。
- 5. CH0, CH1 ポートに LOAD スタンダードを接続し、`CAL` `CALIBRATE` `ISOLN` を実行します。ロードが 1 つしかない場合 CH0 ポートは未接続でもかまいません。
- 6. CH0, CH1 ポートにケーブルを接続し、ケーブル同士をスルーコネクタで接続して、`CAL` `CALIBRATE` `THRU` を実行します。
- 7. 較正を終了し、誤差の補正情報を計算します `CAL` `CALIBRATE` `DONE`
- 8. データ番号を指定して保存します。`CAL` `CALIBRATE` `SAVE` `SAVE 0`
+ 1. Aktuellen Kalibrierstatus zurücksetzen: `CAL` `RESET`
+ 2. OPEN-Standard an den CH0-Anschluss anschließen und `CAL` `CALIBRATE` `OPEN` ausführen.
+ 3. SHORT-Standard an den CH0-Anschluss anschließen und `CAL` `CALIBRATE` `SHORT` ausführen.
+ 4. LOAD-Standard an den CH0-Anschluss anschließen und `CAL` `CALIBRATE` `LOAD` ausführen.
+ 5. LOAD-Standard an die Anschlüsse CH0 und CH1 anschließen und `CAL` `CALIBRATE` `ISOLN` ausführen. Wenn nur ein LOAD vorhanden ist, darf der CH0-Anschluss offen bleiben.
+ 6. Kabel an die Anschlüsse CH0 und CH1 anschließen, die Kabelenden mit dem Durchgangskonnektor (Thru) verbinden und `CAL` `CALIBRATE` `THRU` ausführen.
+ 7. Kalibrierung abschließen und Fehlerkorrekturinformationen berechnen: `CAL` `CALIBRATE` `DONE`
+ 8. Unter Angabe der Datennummer speichern: `CAL` `CALIBRATE` `SAVE` `SAVE 0`
 
-※
-各較正データの取り込みは、十分に表示が安定してから行う必要があります。
+Hinweis:
+Die Aufnahme der einzelnen Kalibrierdaten muss erfolgen, nachdem die Anzeige ausreichend stabilisiert ist.
 
-# 機能
+# Funktionen
 
-## トレース表示
+## Trace-Anzeige
 
 <img class="capture" src="./images/traces.png"/>
 
-トレースは最大 4 つ表示でき、そのうちの 1 つがアクティブなトレースとなります。
+Es können bis zu 4 Traces (Messkurven) angezeigt werden, von denen einer der aktive Trace ist.
 
-トレースは必要なものだけを表示させることができます。表示を切り替えるには `DISPLAY` `TRACE` `TRACE n` を選択します。
+Traces können selektiv eingeblendet werden. Zum Umschalten `DISPLAY` `TRACE` `TRACE n` wählen.
 
-アクティブなトレースを切り替えるには以下の方法があります。
+Es gibt folgende Möglichkeiten, den aktiven Trace zu wechseln:
 
- * アクティブにしたいトレースのマーカーをタップする
- * `DISPLAY` `TRACE` `TRACE n` を選択して表示させる。(既に表示されている場合、一時非表示にする必要があります)
+ * Auf den Marker des Traces tippen, der aktiviert werden soll
+ * `DISPLAY` `TRACE` `TRACE n` wählen, um ihn einzublenden. (Falls er bereits angezeigt wird, muss er zuvor kurz ausgeblendet werden.)
 
-### トレースフォーマット
+### Trace-Formate
 
-各トレースはそれぞれにフォーマットを指定できます。アクティブなトレースのフォーマットを変更するには
-`DISPLAY` `FORMAT` 変更したいフォーマットを選択します。
+Jeder Trace kann ein eigenes Format haben. Um das Format des aktiven Traces zu ändern: `DISPLAY` `FORMAT` wählen und das gewünschte Format auswählen.
 
-各フォーマットの表示は以下の通りです。
+Die einzelnen Formate zeigen Folgendes:
 
- * `LOGMAG`: 測定値の絶対値の対数
- * `PHASE`: -180°から+180°の範囲での位相
- * `DELAY`: 遅延
- * `SMITH`: スミスチャート
- * `SWR`: Standing Wave Ratio
- * `POLAR`: 極座標形式
- * `LINEAR`: 測定値の絶対値
- * `REAL`: 測定値の実数
- * `IMAG`: 測定値の虚数
- * `RESISTANCE`: 測定値のインピーダンスのうち、レジスタンス成分
- * `REACTANCE`: 測定値のインピーダンスのうち、リアクタンス成分
+ * `LOGMAG`: Logarithmus des Betrags des Messwerts
+ * `PHASE`: Phase im Bereich −180° bis +180°
+ * `DELAY`: Laufzeit (Verzögerung)
+ * `SMITH`: Smith-Diagramm
+ * `SWR`: Stehwellenverhältnis (Standing Wave Ratio)
+ * `POLAR`: Polarkoordinatendarstellung
+ * `LINEAR`: Betrag des Messwerts
+ * `REAL`: Realteil des Messwerts
+ * `IMAG`: Imaginärteil des Messwerts
+ * `RESISTANCE`: Wirkwiderstandsanteil (Resistanz) der Impedanz des Messwerts
+ * `REACTANCE`: Blindwiderstandsanteil (Reaktanz) der Impedanz des Messwerts
 
-### トレースのチャンネル
+### Trace-Kanäle
 
-NanoVNA には `CH0` `CH1` の 2 つのポートがあります。それぞれのポートで以下の S パラメータが測定できます。
+Das NanoVNA verfügt über zwei Anschlüsse: `CH0` und `CH1`. An diesen Anschlüssen können folgende S-Parameter gemessen werden:
 
- * `CH0` S11 (反射損失)
- * `CH1` S21 (挿入損失)
+ * `CH0` S11 (Rückflussdämpfung)
+ * `CH1` S21 (Einfügedämpfung)
 
- トレースのチャンネルを変更するには `DISPLAY` `CHANNEL` の `CH0 REFLECT` または `CH1 THROUGH` を選択します。
+Um den Kanal eines Traces zu ändern, unter `DISPLAY` `CHANNEL` entweder `CH0 REFLECT` oder `CH1 THROUGH` wählen.
 
-## マーカー
+## Marker
 
 <img class="capture" src="./images/marker.png">
 <img class="capture" src="./images/marker-select.png">
 
-マーカーは最大 4 つまで表示できます。マーカーの表示は `MARKER` `SELECT MARKER` `MARKER n` から行います。マーカーを表示すると、アクティブなマーカーは表示したマーカーに設定されます。
+Bis zu 4 Marker können angezeigt werden. Das Anzeigen der Marker erfolgt über `MARKER` `SELECT MARKER` `MARKER n`. Beim Anzeigen eines Markers wird der aktive Marker auf den neu angezeigten Marker gesetzt.
 
-## 時間ドメインオペレーション
+## Zeitbereichs-Operationen (Time Domain)
 
-NanoVNA は周波数ドメインデータを信号処理することにより、時間ドメイン測定をシミュレーションできます。
+Das NanoVNA kann durch Signalverarbeitung der Frequenzbereichsdaten eine Zeitbereichsmessung simulieren.
 
-測定データを時間ドメインに変換する場合 `DISPLAY` `TRANSOFRM` `TRANSFORM ON` を選択します。`TRANSFORM ON` が有効な場合、測定データは直ちに時間ドメインに変換されて表示されます。
+Um die Messdaten in den Zeitbereich umzuwandeln, `DISPLAY` `TRANSFORM` `TRANSFORM ON` wählen. Ist `TRANSFORM ON` aktiv, werden die Messdaten sofort in den Zeitbereich umgerechnet und angezeigt.
 
-時間ドメインと周波数ドメインには以下の関係があります。
+Zwischen Zeit- und Frequenzbereich bestehen folgende Zusammenhänge:
 
- * 最大周波数を上げるほど時間分解能が上がる
- * 測定周波数の間隔が狭いほど (すなわち最大周波数が低いほど) 最大時間長が伸びる
+ * Je höher die maximale Frequenz, desto besser die Zeitauflösung
+ * Je enger der Abstand der Messfrequenzen (d. h. je niedriger die maximale Frequenz), desto länger die maximal darstellbare Zeitdauer
 
-このことから最大時間長と時間分解能はトレードオフの関係にあります。
+Maximale Zeitdauer und Zeitauflösung stehen daher in einem Trade-off-Verhältnis.
 
-時間長を距離と言いかえると、以下のことが云えます。
+Ersetzt man die Zeitdauer durch eine Distanz, gilt Folgendes:
 
- * 最大測定距離を長くしたいなら、最大周波数を下げる必要がある
- * 精度よく距離を特定したいなら、最大周波数を上げる必要がある。
+ * Um die maximale Messdistanz zu vergrößern, muss die maximale Frequenz verringert werden.
+ * Um die Distanz präzise zu bestimmen, muss die maximale Frequenz erhöht werden.
 
-### 時間ドメイン バンドパス
+### Zeitbereich: Bandpass
 
-バンドパスモードでは、インパルス信号に対する DUT の応答をシミュレートできます。
+Im Bandpass-Modus kann die Antwort des DUT (Prüflings) auf ein Impulssignal simuliert werden.
 
-トレースフォーマットは `LINEAR` `LOGMAG` `SWR` に設定できます。
+Das Trace-Format kann auf `LINEAR`, `LOGMAG` oder `SWR` eingestellt werden.
 
-以下にバンドパスフィルタのインパルス応答の例を示します。
+Nachfolgend ein Beispiel für die Impulsantwort eines Bandpassfilters:
 
 <img class="capture" src="images/tdr-bandpass-bandpass.png">
 
-### 時間ドメインローパス インパルス
+### Zeitbereich: Tiefpass – Impuls
 
-ローパスモードでは、TDR をシミュレートできます。ローパスモードでは、スタート周波数は 50kHz、ストップ周波数は計測したい距離に応じて設定する必要があります。
+Im Tiefpass-Modus kann ein TDR (Zeitbereichsreflektometer) simuliert werden. Im Tiefpass-Modus muss die Startfrequenz 50 kHz betragen; die Stoppfrequenz ist entsprechend der zu messenden Distanz einzustellen.
 
-トレースフォーマットを `REAL` に設定できます。
+Das Trace-Format kann auf `REAL` eingestellt werden.
 
-以下にオープン状態のステップ応答と、ショート状態のインパルス応答の例を示します。
+Nachfolgend Beispiele für die Sprungantwort bei offenem Ende und die Impulsantwort bei kurzgeschlossenem Ende:
 
 <img class="capture" src="images/impulse-open.png">
 <img class="capture" src="images/impulse-short.png">
 
-### 時間ドメインローパス ステップ
+### Zeitbereich: Tiefpass – Sprung (Step)
 
-ローパスモードでは、TDR をシミュレートできます。ローパスモードでは、スタート周波数は 50kHz、ストップ周波数は計測したい距離に応じて設定する必要があります。
+Im Tiefpass-Modus kann ein TDR simuliert werden. Im Tiefpass-Modus muss die Startfrequenz 50 kHz betragen; die Stoppfrequenz ist entsprechend der zu messenden Distanz einzustellen.
 
-トレースフォーマットを `REAL` に設定できます。
+Das Trace-Format kann auf `REAL` eingestellt werden.
 
 
-オープン:<br>
+Offen:<br>
 <img class="capture" src="images/step-open.png">
 
-ショート:<br>
+Kurzschluss:<br>
 <img class="capture" src="images/step-short.png">
 
-#### ステップ応答の例
+#### Beispiele für Sprungantworten
 
-容量性ショート:<br>
+Kapazitiver Kurzschluss:<br>
 <img class="capture" src="images/tdr-capacitive-termination.png">
 
-誘導性ショート:<br>
+Induktiver Kurzschluss:<br>
 <img class="capture" src="images/tdr-inductive-termination.png">
 
-容量性の非連続 (並列に C):<br>
+Kapazitive Diskontinuität (paralleles C):<br>
 <img class="capture" src="images/tdr-c-shunt-discontinuity.png">
 
-誘導性の非連続 (直列に L):<br>
+Induktive Diskontinuität (serielles L):<br>
 <img class="capture" src="images/tdr-l-series-discontinuity.png">
 
-### 時間ドメイン ウィンドウ
+### Zeitbereich: Fensterfunktion
 
-測定できる範囲は有限個数であり、最低周波数及び最大周波数が存在します。ウィンドウはこの不連続な測定データを滑らかにし、リンギングを抑えるめに使用できます。
+Der messbare Bereich ist endlich; es gibt eine niedrigste und eine maximale Frequenz. Mit der Fensterfunktion lassen sich diese unstetigen Messdaten glätten und Nachschwingen (Ringing) unterdrücken.
 
-ウィンドウには 3 段階あります。
+Es gibt drei Stufen:
 
- * MINIMUM (ウィンドウなし、すなわち矩形窓と同じです)
- * NORMAL (カイザー窓のβ=6 に相当します)
- * MAXIMUM (カイザー窓のβ=13 に相当します)
+ * MINIMUM (kein Fenster, entspricht dem Rechteckfenster)
+ * NORMAL (entspricht dem Kaiser-Fenster mit β=6)
+ * MAXIMUM (entspricht dem Kaiser-Fenster mit β=13)
 
-MINIMUM では最大限分解能が高くなります、MAXIMUM では最大限ダイナミックレンジが高くなります。NORMAL はその中間です。
+Bei MINIMUM ist die Auflösung maximal, bei MAXIMUM der Dynamikbereich maximal. NORMAL liegt dazwischen.
 
-### 時間ドメインでの波長短縮率 (Velocity Factor) の設定
+### Einstellung des Verkürzungsfaktors (Velocity Factor) im Zeitbereich
 
-ケーブル中の電磁波の伝送速度はその材質によって変化します。真空中の電磁波の伝送速度に対する比を波長短縮率 (Velocity Factor, Velocity of propagation) と呼びます。これはケーブルの仕様に必ず記載されています。
+Die Ausbreitungsgeschwindigkeit elektromagnetischer Wellen im Kabel hängt vom Material ab. Das Verhältnis dieser Geschwindigkeit zur Ausbreitungsgeschwindigkeit im Vakuum wird als Verkürzungsfaktor (Velocity Factor, Velocity of Propagation) bezeichnet. Er ist immer in den Spezifikationen des Kabels angegeben.
 
-時間ドメインでは、表示される時間を距離に換算した表示をできます。
-距離表示の際使用される波長短縮率は `DISPLAY` `TRANSFORM` `VELOCITY FACTOR` で設定できます。例えば、67％ の波長短縮率を持つケーブルの TDR を測定した場合は、`VELOCITY FACTOR` で `67` を指定します。
+Im Zeitbereich kann die angezeigte Zeit auch als Distanz dargestellt werden.
+Der für die Distanzanzeige verwendete Verkürzungsfaktor kann unter `DISPLAY` `TRANSFORM` `VELOCITY FACTOR` eingestellt werden. Für die TDR-Messung eines Kabels mit einem Verkürzungsfaktor von 67 % gibt man z. B. bei `VELOCITY FACTOR` `67` ein.
 
-### マーカーから周波数を設定
+### Frequenz aus dem Marker übernehmen
 
-以下のように、マーカーから周波数範囲を設定できます。
+Der Frequenzbereich kann wie folgt aus einem Marker festgelegt werden:
 
- * `MARKER` `→START` アクティブマーカーの周波数をスタート周波数に設定します
- * `MARKER` `→STOP` アクティブマーカーの周波数をストップ周波数に設定します
- * `MARKER` `→CENTER` アクティブマーカーの周波数をセンター周波数に設定します。スパンは現在の範囲をできるだけ維持するように調整されます。
- * `MARKER` `→SPAN` アクティブマーカーを含む、表示されている 2 つのマーカーをスパンに設定します。マーカーが 1 つだけ表示されている場合は何も起きません。
+ * `MARKER` `→START`: setzt die Frequenz des aktiven Markers als Startfrequenz
+ * `MARKER` `→STOP`: setzt die Frequenz des aktiven Markers als Stoppfrequenz
+ * `MARKER` `→CENTER`: setzt die Frequenz des aktiven Markers als Mittenfrequenz. Die Spannweite wird so angepasst, dass der aktuelle Bereich möglichst erhalten bleibt.
+ * `MARKER` `→SPAN`: setzt die beiden angezeigten Marker (einschließlich des aktiven Markers) als Spannweite. Ist nur ein Marker sichtbar, geschieht nichts.
 
-## 測定範囲の設定
+## Einstellen des Messbereichs
 
 <img class="capture" src="./images/stimulus.png">
 
-測定範囲の設定には 3 つの種類があります。
+Es gibt drei Arten, den Messbereich einzustellen:
 
- * スタート周波数・ストップ周波数を設定する
- * センター周波数・スパンを設定する
- * ゼロスパン
+ * Start- und Stoppfrequenz festlegen
+ * Mittenfrequenz und Spannweite festlegen
+ * Zero-Span
 
-### スタート周波数・ストップ周波数を設定する
+### Start- und Stoppfrequenz festlegen
 
-それぞれ、`STIMULUS` `START`、`STIMULUS` `STOP` を選択して設定します。
+Dazu jeweils `STIMULUS` `START` bzw. `STIMULUS` `STOP` wählen und einstellen.
 
-### センター周波数・スパンを設定する
+### Mittenfrequenz und Spannweite festlegen
 
-それぞれ、`STIMULUS` `CENTER`、`STIMULUS` `SPAN` を選択して設定します。
+Dazu jeweils `STIMULUS` `CENTER` bzw. `STIMULUS` `SPAN` wählen und einstellen.
 
-### ゼロスパン
+### Zero-Span
 
-ゼロスパンは周波数スイープを行わず、1 つの周波数を連続で送出するモードです。
+Zero-Span ist ein Modus ohne Frequenzsweep, bei dem eine einzelne Frequenz kontinuierlich ausgegeben wird.
 
-`STIMULUS` `CW FREQ` を選択して設定します。
+Zur Einstellung `STIMULUS` `CW FREQ` wählen.
 
-### 一時的に測定を停止する
+### Messung vorübergehend anhalten
 
-`STIMULUS` `PAUSE SWEEP` を選択すると、一時的に測定を停止します。
+Mit `STIMULUS` `PAUSE SWEEP` wird die Messung vorübergehend angehalten.
 
 
-## 較正と設定の呼び出し
+## Aufrufen von Kalibrierung und Einstellungen
 
 <img class="capture" src="./images/save.png">
 
-較正データは最大 5 つ保存可能です。NanoVNA は起動直後、番号 0 のデータをロードします。
+Es können bis zu 5 Kalibrierdatensätze gespeichert werden. Direkt nach dem Einschalten lädt das NanoVNA den Datensatz 0.
 
-較正データとは、以下の情報を含むデータです。
+Die Kalibrierdaten enthalten folgende Informationen:
 
- * 周波数の設定範囲
- * 各測定点における誤差補正
- * トレースの設定状態
- * マーカーの設定状態
- * ドメインモードの設定
- * 波長短縮率の設定
- * electrical delay
+ * Eingestellter Frequenzbereich
+ * Fehlerkorrektur an jedem Messpunkt
+ * Trace-Einstellungen
+ * Marker-Einstellungen
+ * Einstellung des Domain-Modus (Frequenz-/Zeitbereich)
+ * Einstellung des Verkürzungsfaktors
+ * Electrical Delay (elektrische Verzögerung)
 
-`CAL` `SAVE` `SAVE n` を選択することで、現在の設定を保存できます。
+Mit `CAL` `SAVE` `SAVE n` lassen sich die aktuellen Einstellungen speichern.
 
-`CAL` `RESET` を選択することで、現在の較正データをリセットできます。較正を再度行う場合は `RESET` を行う必要があります。
+Mit `CAL` `RESET` lassen sich die aktuellen Kalibrierdaten zurücksetzen. Für eine erneute Kalibrierung muss `RESET` durchgeführt werden.
 
-`CAL` `CORRECTION` は現在エラー修正が行われているかを示します。これを選択して一時的にエラー修正を止めることができます。
+`CAL` `CORRECTION` zeigt an, ob derzeit eine Fehlerkorrektur aktiv ist. Durch Auswählen lässt sich die Fehlerkorrektur vorübergehend deaktivieren.
 
 <img class="capture" src="./images/recall.png">
 
-`RECALL` `RECALL n` を選択することで、保存した設定を呼びだすことができます。
+Mit `RECALL` `RECALL n` können gespeicherte Einstellungen aufgerufen werden.
 
-## 機器の設定
+## Geräteeinstellungen
 
 <img class="capture" src="./images/config.png">
 
-`CONFIG` 以下では機器の全般的な設定などを行うことができます。
+Unter `CONFIG` lassen sich allgemeine Geräteeinstellungen vornehmen.
 
-### タッチパネルの較正とテスト
+### Kalibrierung und Test des Touchpanels
 
 <img class="capture" src="./images/touchcal.png">
 <img class="capture" src="./images/touchcal2.png">
 
-`CONFIG` `TOUCH CAL` を選択すると、タッチパネルの較正を行うことができます。実際のタップ位置と、認識されるタップ位置に大きな差がある場合には、これを実行することで解決できます。`TOUCH CAL` を行ったあと、`TOUCH TEST` を行って正しく設定されていることを確認し、`SAVE` で設定を保存します。
+Mit `CONFIG` `TOUCH CAL` kann das Touchpanel kalibriert werden. Bestehen große Abweichungen zwischen der tatsächlichen und der erkannten Tipp-Position, lässt sich das hiermit beheben. Führen Sie nach `TOUCH CAL` einen `TOUCH TEST` durch, um zu prüfen, ob alles korrekt eingestellt ist, und speichern Sie die Einstellungen mit `SAVE`.
 
 <img class="capture" src="./images/touchtest.png">
 
-`CONFIG` `TOUCH TEST` を選択すると、タッチパネルのテストを行うことができます。タッチパネルをタップしている間は線がひかれます。タッチパネルから離すと元の状態に戻ります。
+Mit `CONFIG` `TOUCH TEST` lässt sich das Touchpanel testen. Während das Touchpanel berührt wird, wird eine Linie gezeichnet; beim Loslassen kehrt die Anzeige in den Ausgangszustand zurück.
 
-### 機器の設定の保存
+### Speichern der Geräteeinstellungen
 
-`CONFIG` `SAVE` を選択すると機器の全般的な設定を保存できます。機器の全般的な設定とは、以下の情報を含むデータです。
+Mit `CONFIG` `SAVE` lassen sich die allgemeinen Geräteeinstellungen speichern. Diese enthalten folgende Informationen:
 
- * タッチパネルの較正情報
- * グリッドカラー
- * トレースカラー
- * デフォルトでロードされる較正データ番号
+ * Kalibrierdaten des Touchpanels
+ * Gitterfarbe
+ * Trace-Farben
+ * Standardmäßig geladene Kalibrierdaten-Nummer
 
- タッチパネルの較正情報以外は、現在設定する方法がありません。
+ Außer den Touchpanel-Kalibrierdaten gibt es derzeit keine Möglichkeit, diese einzustellen.
 
-### バージョンを表示する
+### Version anzeigen
 
 <img class="capture" src="./images/version.png">
 
-`CONFIG` `VERSION` を選択すると、機器のバージョン情報を表示できます。
+Mit `CONFIG` `VERSION` lassen sich die Versionsinformationen des Geräts anzeigen.
 
-### ファームウェアアップデート
+### Firmware-Update
 
 <img class="capture" src="./images/dfu.png">
 
-`CONFIG` `→DFU` `RESET AND ENTER DFU` を選択すると、機器をリセットし、DFU (Device Firmware Update) モードに入ります。このモードでは USB 経由でファームウェアアップデートが可能です。
+Mit `CONFIG` `→DFU` `RESET AND ENTER DFU` wird das Gerät zurückgesetzt und in den DFU-Modus (Device Firmware Update) versetzt. In diesem Modus kann die Firmware über USB aktualisiert werden.
 
-# ファームウェアの更新方法
+# Firmware aktualisieren
 
-## ファームウェアの入手方法
+## Firmware beziehen
 
-### ttrftech 版ファームウェア
+### ttrftech-Firmware
 
-オリジナルのファームウェアです。バージョン管理されており、頻繁に開発されています。
+Dies ist die Original-Firmware. Sie ist versioniert und wird aktiv weiterentwickelt.
 
  * [GitHub releases](https://github.com/ttrftech/NanoVNA/releases)
- * [CircleCI build](https://cho45.stfuawsc.com/NanoVNA/dfu.html)
+ * [CircleCI-Build](https://cho45.stfuawsc.com/NanoVNA/dfu.html)
 
- GitHub releases にはある程度安定したリリース版のファームウェアがあります。
+ Auf GitHub releases finden sich einigermaßen stabile Release-Versionen der Firmware.
 
- CircleCI にはコミットごと全てのファームウェアがあります。最新の機能を試したい場合や、不具合を確認する場合はこちらを使用します。
+ Auf CircleCI gibt es die Firmware zu jedem Commit. Wer die neuesten Funktionen ausprobieren oder Fehler überprüfen möchte, verwendet diese.
 
-### hugen79 版ファームウェア
+### hugen79-Firmware
 
  * [Google Drive](https://drive.google.com/drive/folders/1IRz6E1wlkRyV0u7sbqj0lhWST-GV1szY)
  
-Google Drive に最新のファームウェアが配置されています。
+Die neueste Firmware befindet sich auf Google Drive.
 
-### 自分でビルドする
+### Selbst bauen
 
-github のリポジトリを clone して自分でビルドすることも簡単にできます。
+Man kann das GitHub-Repository auch klonen und die Firmware selbst bauen – das ist problemlos möglich.
 
 
-## ファームウェアの書きこみかた
+## Firmware flashen
 
-書きこみかたはいろいろな方法がありますが、ここでは [dfu-util](http://dfu-util.sourceforge.net/) を用いて説明します。
-dfu-util はクロスプラットフォームツールであり、Windows ではバイナリも提供されていますので、ダウンロードするだけで使用できます。
+Es gibt verschiedene Möglichkeiten zu flashen; hier wird [dfu-util](http://dfu-util.sourceforge.net/) verwendet.
+dfu-util ist ein plattformübergreifendes Werkzeug; für Windows werden Binärdateien angeboten, sodass es direkt nach dem Herunterladen einsatzbereit ist.
 
-### dfu-util を使った書きこみ (Ubuntu)
+### Flashen mit dfu-util (Ubuntu)
 
-標準パッケージリポジトリに dfu-util があります。
+dfu-util ist im Standard-Paketrepository enthalten.
 
 ```
 sudo apt-get install dfu-util
 dfu-util --version
 ```
 
-デバイスを DFU モードで起動します。以下のいずれかの方法で DFU モードになります。
+Starten Sie das Gerät im DFU-Modus. Dies gelingt auf eine der folgenden Arten:
 
- * PCB 上の BOOT0 ピンをジャンパーしながら電源を入れる。(電源を入れたあとはジャンパーを外します) 画面が真っ白になりますが正常です。
- * `CONFIG` `→DFU` `RESET AND ENTER DFU` を選択する
+ * Beim Einschalten den BOOT0-Pin auf der Platine überbrücken (nach dem Einschalten die Überbrückung wieder entfernen). Der Bildschirm bleibt danach weiß – das ist normal.
+ * `CONFIG` `→DFU` `RESET AND ENTER DFU` auswählen
 
 
-以下のコマンドを実行します。build/ch.bin はダウンロードしたファームウェアファイルの .bin までのパスを記述します。
+Führen Sie den folgenden Befehl aus. Ersetzen Sie build/ch.bin durch den Pfad zur .bin-Datei der heruntergeladenen Firmware.
 
 ```
 dfu-util -d 0483:df11 -a 0 -s 0x08000000:leave -D build/ch.bin
 ```
 
-### dfu-util を使った書きこみ (macOS)
+### Flashen mit dfu-util (macOS)
 
-[homebrew](https://brew.sh/index_ja) を使ってインストールするのがお勧めです。
+Die Installation über [homebrew](https://brew.sh/index_de.html) wird empfohlen.
 
-brew コマンドのインストールをします。
+Zuerst den brew-Befehl (Homebrew) installieren:
 
 ```
 ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 ```
 
-dfu-util コマンドのインストールをします。
+Dann dfu-util installieren:
 
 ```
 brew install dfu-util
 ```
 
-dfu-util コマンドが正常に起動できることを確認します。
+Prüfen, ob dfu-util korrekt funktioniert:
 
 ```
 dfu-util --version
 ```
 
-デバイスを DFU モードで起動します。以下のいずれかの方法で DFU モードになります。
+Starten Sie das Gerät im DFU-Modus. Dies gelingt auf eine der folgenden Arten:
 
- * PCB 上の BOOT0 ピンをジャンパーしながら電源を入れる。(電源を入れたあとはジャンパーを外します) 画面が真っ白になりますが正常です。
- * `CONFIG` `→DFU` `RESET AND ENTER DFU` を選択する
+ * Beim Einschalten den BOOT0-Pin auf der Platine überbrücken (nach dem Einschalten die Überbrückung wieder entfernen). Der Bildschirm bleibt danach weiß – das ist normal.
+ * `CONFIG` `→DFU` `RESET AND ENTER DFU` auswählen
 
 
-以下のコマンドを実行します。build/ch.bin はダウンロードしたファームウェアファイルの .bin までのパスを記述します。
+Führen Sie den folgenden Befehl aus. Ersetzen Sie build/ch.bin durch den Pfad zur .bin-Datei der heruntergeladenen Firmware.
 
 ```
 dfu-util -d 0483:df11 -a 0 -s 0x08000000:leave -D build/ch.bin
 ```
 
 
-### dfu-util を使った書きこみ (Windows 10)
+### Flashen mit dfu-util (Windows 10)
 
-Windows の場合、DFU モードの NanoVNA を接続すると自動的にデバイスドライバのインストールが行われますが、このデバイスドライバでは dfu-util を利用できません。
-ここでは [Zadig](https://zadig.akeo.ie) を利用してドライバを入れかえます。
+Unter Windows wird beim Anschließen des NanoVNA im DFU-Modus automatisch ein Gerätetreiber installiert; mit diesem Treiber kann dfu-util jedoch nicht verwendet werden.
+Hier wird der Treiber mithilfe von [Zadig](https://zadig.akeo.ie) ausgetauscht.
 
-デバイスを DFU モードで起動します。以下のいずれかの方法で DFU モードになります。
+Starten Sie das Gerät im DFU-Modus. Dies gelingt auf eine der folgenden Arten:
 
- * PCB 上の BOOT0 ピンをジャンパーしながら電源を入れる。(電源を入れたあとはジャンパーを外します) 画面が真っ白になりますが正常です。
- * `CONFIG` `→DFU` `RESET AND ENTER DFU` を選択する
+ * Beim Einschalten den BOOT0-Pin auf der Platine überbrücken (nach dem Einschalten die Überbrückung wieder entfernen). Der Bildschirm bleibt danach weiß – das ist normal.
+ * `CONFIG` `→DFU` `RESET AND ENTER DFU` auswählen
 
-DFU モードにした NanoVNA を接続した状態で Zadig を起動し、以下のように STM32 BOOTLOADER に対して WinUSB をドライバとして利用するようにします。
+Starten Sie Zadig, während das NanoVNA im DFU-Modus angeschlossen ist, und stellen Sie wie unten gezeigt ein, dass für den „STM32 BOOTLOADER" WinUSB als Treiber verwendet wird.
 
 <img src="images/win-zadig.png">
 
-※ ドライバを元に戻したい場合、「デバイス マネージャ」の「ユニバーサルシリアルバスコントローラ」から、該当するデバイスを探して「デバイスのアンインストール」を実行します。USB コネクタを抜いて再度挿すとドライバが自動でインストールされます。
+Hinweis: Um den Treiber zurückzusetzen, suchen Sie im „Geräte-Manager" unter „Universelle Serial-Bus-Controller" das betreffende Gerät und führen Sie „Gerät deinstallieren" aus. Beim erneuten Einstecken des USB-Kabels wird der Treiber automatisch installiert.
 
-次に dfu-util を配置します。releases から [dfu-util-0.9-win64.zip](http://dfu-util.sourceforge.net/releases/dfu-util-0.9-win64.zip) をダウンロードして展開します。
-ここでは例として C:\dfu-util に展開したものとします (どこでもかまいません)。
+Als Nächstes richten Sie dfu-util ein. Laden Sie die Datei [dfu-util-0.9-win64.zip](http://dfu-util.sourceforge.net/releases/dfu-util-0.9-win64.zip) aus dem releases-Bereich herunter und entpacken Sie sie.
+In diesem Beispiel wird nach C:\dfu-util entpackt (der Speicherort ist beliebig).
 
-スタートメニューを右クリックして Windows PowerShell を選択します。シェルの画面が開きます。
+Klicken Sie mit der rechten Maustaste auf das Startmenü und wählen Sie „Windows PowerShell". Das Shell-Fenster öffnet sich.
 
 <img src="images/win-run-dfu-util.png">
 
-エクスプローラから dfu-util.exe を PowerShell へドラッグ&ドロップするとパスが自動挿入されます。以下のように `--version` をつけて起動すると dfu-util のバージョン表示ができます。
+Ziehen Sie dfu-util.exe aus dem Explorer per Drag & Drop in das PowerShell-Fenster; der Pfad wird automatisch eingefügt. Der folgende Aufruf mit `--version` zeigt die Version von dfu-util an:
 
 ```
 C:\dfu-util\dfu-util.exe --version
@@ -580,72 +574,72 @@ C:\dfu-util\dfu-util.exe --version
 
 <img src="images/win-firmware.png">
 
-同様にファームウェアのファイルもエクスプローラから PowerShell へドラッグ&ドロップすることでパスが入力できます。
+Ebenso lässt sich der Pfad der Firmware-Datei per Drag & Drop aus dem Explorer in PowerShell einfügen.
 
 
-以下のコマンドを実行します。build/ch.bin はダウンロードしたファームウェアファイルの .bin までのパスを記述します。
+Führen Sie den folgenden Befehl aus. Ersetzen Sie build\ch.bin durch den Pfad zur .bin-Datei der heruntergeladenen Firmware.
 
 ```
 C:\dfu-util\dfu-util.exe -d 0483:df11 -a 0 -s 0x08000000:leave -D build\ch.bin
 ```
 
-## ファームウェアの書きこみかた (Windows GUI)
+## Firmware flashen (Windows GUI)
 
-CUI になじみのないかた向けに、若干面倒な手順が必要ですが ST が提供する DfuSE Demo ツールを使った書きこみ方法も参考程度に紹介します。
+Für alle, die mit der Kommandozeile nicht vertraut sind, wird zusätzlich eine Methode mit dem von ST bereitgestellten Werkzeug DfuSE Demo vorgestellt. Sie erfordert einige zusätzliche Schritte, ist hier aber der Vollständigkeit halber aufgeführt.
 
-[ST のサイトから STSW-STM32080](https://www.st.com/ja/development-tools/stsw-stm32080.html) をダウンロードします。
+Laden Sie [STSW-STM32080 von der ST-Website](https://www.st.com/ja/development-tools/stsw-stm32080.html) herunter.
 
- * DFU File Manager: .bin または .hex から .dfu ファイルを作成するツール
- * DfuSe Demo: .dfu ファイルをデバイスに書きこむツール
+Enthalten sind:
 
-が含まれています。
+ * DFU File Manager: Werkzeug zum Erstellen von .dfu-Dateien aus .bin- oder .hex-Dateien
+ * DfuSe Demo: Werkzeug zum Flashen von .dfu-Dateien auf das Gerät
 
-### DFU File Manager でファイル形式を変換する。
+### Dateiformat mit dem DFU File Manager konvertieren
 
-まず DFU File Manager を起動します。
+Starten Sie zuerst den DFU File Manager.
 
 <img src="images/dfu-file-manager-open.png">
 
-`I want to GENERATE a DFU file from S19, HEX or BIN files` を選択します。
+Wählen Sie „I want to GENERATE a DFU file from S19, HEX or BIN files".
 
 <img src="images/dfu-file-manager-from-hex.png">
 
-`S19 or Hex...` ボタンをクリックします。`ch.hex` などファームウェアの .hex ファイルを選択します。
+Klicken Sie auf die Schaltfläche „S19 or Hex...". Wählen Sie die .hex-Datei der Firmware, z. B. „ch.hex".
 
 <img src="images/dfu-file-manager-generate.png">
 
-`Generate...` ボタンをクリックして、適当な名前をつけて .dfu ファイルを作成します。
+Klicken Sie auf die Schaltfläche „Generate..." und erstellen Sie unter einem geeigneten Namen die .dfu-Datei.
 
-### DfuSe Demo でファームウェアを書きこみ
+### Firmware mit DfuSe Demo flashen
 
-まずデバイスを DFU モードで起動します。以下のいずれかの方法で DFU モードになります。
+Starten Sie zuerst das Gerät im DFU-Modus. Dies gelingt auf eine der folgenden Arten:
 
- * PCB 上の BOOT0 ピンをジャンパーしながら電源を入れる。(電源を入れたあとはジャンパーを外します) 画面が真っ白になりますが正常です。
- * `CONFIG` `→DFU` `RESET AND ENTER DFU` を選択する
+ * Beim Einschalten den BOOT0-Pin auf der Platine überbrücken (nach dem Einschalten die Überbrückung wieder entfernen). Der Bildschirm bleibt danach weiß – das ist normal.
+ * `CONFIG` `→DFU` `RESET AND ENTER DFU` auswählen
 
-DfuSe Demo を起動します。Available DFU Devices に `STM Device in DFU Mode` があることを確認して、`Choose...` をクリックします。
+Starten Sie DfuSe Demo. Vergewissern Sie sich, dass unter „Available DFU Devices" der Eintrag „STM Device in DFU Mode" erscheint, und klicken Sie auf „Choose...".
 
 <img src="images/dfuse-demo-choose.png">
 
-先程保存した .dfu ファイルを選択します。
+Wählen Sie die zuvor gespeicherte .dfu-Datei aus.
 
 <img src="images/dfuse-upgrade.png">
 
-`Upgrade` ボタンをクリックします。
+Klicken Sie auf die Schaltfläche „Upgrade".
 
 <img src="images/dfuse-leave-dfu-mode.png">
 
-書きこみが終わるとこの画面になるので、`Leave DFU mode` ボタンをクリックして DFU モードを抜けます。デバイスがリセットされて新しいファームウェアで起動します。
+Nach Abschluss des Flashvorgangs erscheint dieser Bildschirm. Klicken Sie auf „Leave DFU mode", um den DFU-Modus zu verlassen. Das Gerät wird zurückgesetzt und startet mit der neuen Firmware.
 
-# ファームウェア開発の手引き
+# Leitfaden zur Firmware-Entwicklung
 
-NanoVNA のファームウェアの開発の必要なものは以下の通りです。
+Für die Entwicklung der NanoVNA-Firmware werden folgende Werkzeuge benötigt:
 
  * Git
  * gcc-arm-none-eabi
  * make
 
-これらが既にある環境なら、`make` でファームウェアのビルドが可能です。
+Wenn diese bereits vorhanden sind, lässt sich die Firmware einfach mit `make` bauen.
 
 ```
 git clone git@github.com:ttrftech/NanoVNA.git
@@ -654,32 +648,32 @@ git submodule update --init --recursive
 make
 ```
 
-## Docker を使ったビルド
+## Bauen mit Docker
 
-docker を使うとわずらわしいことなしにビルドできます。docker は無償で利用できるクロスプラットフォームのコンテナユーティリティです。特定の環境 (今回の場合、ビルド環境) を素早く再現するために利用できます。
+Mit Docker lässt sich die Firmware ohne lästige Einrichtung bauen. Docker ist ein kostenloses, plattformübergreifendes Container-Werkzeug. Es eignet sich, um eine bestimmte Umgebung (hier: die Build-Umgebung) schnell zu reproduzieren.
 
-[docker](https://hub.docker.com/) をインストールした上で、以下のコマンドを実行するだけです。
+Installieren Sie [Docker](https://hub.docker.com/) und führen Sie einfach den folgenden Befehl aus:
 
 ```
 docker run -it --rm -v $(PWD):/work edy555/arm-embedded:8.2 make
 ```
 
-## Visual Studio Code を使ったオンチップデバッグ
+## On-Chip-Debugging mit Visual Studio Code
 
-Visual Studio Code (以下 VSCode) は Microsoft が無償で提供するマルチプラットフォームなコードエディタです。
-[Cortex-Debug](https://marcelball.ca/projects/cortex-debug/) Extension を導入することでオンチップデバッグを GUI で行うことができます。
+Visual Studio Code (im Folgenden VSCode) ist ein kostenloser, plattformübergreifender Code-Editor von Microsoft.
+Mit der Extension [Cortex-Debug](https://marcelball.ca/projects/cortex-debug/) lässt sich On-Chip-Debugging über eine GUI durchführen.
 
-プラットフォーム依存の部分は省きますが、上記に加えて以下のものが必要です。
+Plattformspezifische Details werden hier ausgelassen; zusätzlich zu oben Genanntem werden folgende Komponenten benötigt:
 
  * openocd
  * VSCode
  * Cortex-Debug
 
-Cortex-Debug は VSCode の Extensions から検索して Install します。
+Cortex-Debug wird über die Extension-Suche in VSCode gefunden und installiert.
 
 ### tasks.json
 
-まず VSCode 上で NanoVNA 全体を make するする「タスク」を定義します。
+Definieren Sie zuerst in VSCode einen „Task", um das gesamte NanoVNA-Projekt mit make zu bauen.
 
 ```json
 {
@@ -699,13 +693,13 @@ Cortex-Debug は VSCode の Extensions から検索して Install します。
 }
 ```
 
-これで VSCode 上のタスクとして make できるようになります。
+Damit lässt sich make als Task in VSCode ausführen.
 
 ### launch.json
 
-次に Debug 時にどのように起動するかを定義します。Cortex-Debug の説明に従って設定します。
+Definieren Sie als Nächstes, wie beim Debuggen gestartet werden soll. Richten Sie die Konfiguration nach der Anleitung von Cortex-Debug ein.
 
-以下は ST-Link を使った場合の設定です。もし J-Link を使う場合は `interface/stlink.cfg` を `interface/jlink.cfg` に置き換えます。
+Nachfolgend die Konfiguration für die Verwendung eines ST-Link. Bei Verwendung eines J-Link ersetzen Sie `interface/stlink.cfg` durch `interface/jlink.cfg`.
 
 ```json
 {
@@ -729,62 +723,61 @@ Cortex-Debug は VSCode の Extensions から検索して Install します。
 }
 ```
 
-`svdFile` に指定するファイルは [ST のサイト](https://www.st.com/ja/microcontrollers-microprocessors/stm32f072c8.html#) からダウンロードできます。
-`svdFile` は指定しなくても動作に支障はありません。
+Die unter `svdFile` anzugebende Datei kann von der [ST-Website](https://www.st.com/ja/microcontrollers-microprocessors/stm32f072c8.html#) heruntergeladen werden.
+Ohne Angabe von `svdFile` funktioniert das Debugging ebenfalls.
 
-### デバッグを開始する
+### Debugging starten
 
-Start Debugging (`F5`) をすると、make によるビルドののち、OpenOCD が自動的に起動してファームウェアの転送が行われます。
-転送が終わるとリセットハンドラでブレークした状態になります。
+Mit Start Debugging (`F5`) wird nach dem make-Build automatisch OpenOCD gestartet und die Firmware übertragen.
+Nach Abschluss der Übertragung hält das Programm am Reset-Handler an.
 
 <img src="./images/vscode-openocd.png">
 
-`svdFile` を指定している場合、定義済みの MCU のレジスタがデバッグ画面に表示されます。
+Wenn `svdFile` angegeben ist, werden die vordefinierten MCU-Register im Debug-Fenster angezeigt.
 
 <img src="./images/vscode-svd.png">
 
-# 使用例
+# Anwendungsbeispiele
 
-## バンドパスフィルタの調整
+## Abstimmung eines Bandpassfilters
 TODO
 
-## アンテナの調整
+## Abstimmung einer Antenne
 
 <img class="capture" src="images/example-antenna.png">
 
-NanoVNA をアンテナアナライザーとして利用する例を示します。
+Hier ein Beispiel für die Verwendung des NanoVNA als Antennenanalysator.
 
-アンテナの調整において重要なのは以下の 2 点です。
+Bei der Antennenabstimmung sind folgende zwei Punkte entscheidend:
 
- * アンテナが同調・共振状態にあるか (すなわちリアクタンスが目的とする周波数で 0 に近いか)
- * アンテナの SWR が低いか (十分にマッチングがとれているか)
+ * Befindet sich die Antenne im abgestimmten/resonanten Zustand? (d. h. ist die Reaktanz bei der Zielfrequenz nahe 0?)
+ * Ist das SWR der Antenne niedrig? (ist die Anpassung ausreichend?)
 
-### トレースの設定
+### Trace-Einstellungen
 
-アンテナの調整では CH0 のみを使用しますので、`THRU` と `ISOLN` 以外の全ての項目について、較正を実施します。
+Für die Antennenabstimmung wird nur CH0 verwendet; daher führen Sie die Kalibrierung für alle Schritte außer `THRU` und `ISOLN` durch.
 
-トレース設定は以下のようにします。
+Die Trace-Einstellungen sind wie folgt:
 
- * トレース 0: CH0 SWR
- * トレース 1: CH0 REACTANCE
- * トレース 2: CH0 SMITH
- * トレース 3: OFF
+ * Trace 0: CH0 SWR
+ * Trace 1: CH0 REACTANCE
+ * Trace 2: CH0 SMITH
+ * Trace 3: OFF
 
-アンテナの同調させたい周波数を `CENTER` に設定し、`SPAN` を適切に設定します。
+Stellen Sie die Frequenz, auf die die Antenne abgestimmt werden soll, als `CENTER` ein und wählen Sie eine passende `SPAN`.
 
-リアクタンスを表示しているトレース 1 が 0 に近い周波数を探します。その周波数が同調点ですので、ずれていればアンテナを調整し、目的の周波数に同調点がくるようにします。
+Suchen Sie die Frequenz, bei der Trace 1 (Reaktanz) nahe 0 liegt. Diese Frequenz ist der Resonanzpunkt. Weicht er ab, justieren Sie die Antenne so, dass der Resonanzpunkt auf die Zielfrequenz fällt.
 
-同調点が目的の周波数にあったら、SWR を表示しているトレース 0 が十分に低い (1 に近い) SWR を表示しているかを確認します。もし十分に (2 以下の) SWR を示していない場合、スミスチャートを使ってマッチングを行います。
-この際、マッチングはアンテナ直下のアンテナチューナーなどを使ってもかまいません。
+Liegt der Resonanzpunkt bei der Zielfrequenz, prüfen Sie, ob Trace 0 (SWR) ein ausreichend niedriges SWR (nahe 1) anzeigt. Zeigt er kein ausreichendes SWR (unter 2), führen Sie die Anpassung mit dem Smith-Diagramm durch.
+Dafür kann z. B. auch ein Antennentuner unmittelbar an der Antenne verwendet werden.
 
-SWR が落ちれば、目的の周波数で同調し、SWR が低いアンテナの調整は終わりです。
+Sinkt das SWR, ist die Antenne bei der Zielfrequenz resonant und die Abstimmung der Antenne mit niedrigem SWR abgeschlossen.
 
-## ケーブルの確認
+## Prüfung eines Kabels
 
-時間ドメインのローパスモードを使うことで TDR をシミュレートできます。TDR を使うことで、伝送路の不具合を発見できます。
-
-TODO
-
-## コモンモードフィルタの測定
+Mit dem Tiefpass-Modus im Zeitbereich lässt sich ein TDR simulieren. Mit einem TDR können Fehler auf Übertragungsstrecken aufgespürt werden.
 
 TODO
+
+## Messung eines Gleichtaktfilters (Common-Mode-Filter)
+
